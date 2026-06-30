@@ -101,6 +101,13 @@
   }
   .img-picker img{ width:100%; height:100%; object-fit:cover; }
   .img-picker-placeholder{ display:flex; flex-direction:column; align-items:center; color:#9a8f72; font-size:12.5px; gap:6px; }
+  .nombre-archivo-aviso{
+    margin-top:10px; border:1.5px dashed var(--gold); background:rgba(184,134,11,0.06);
+    border-radius:4px; padding:10px 12px; font-size:12px; line-height:1.6; color:#5c4a14;
+  }
+  .nombre-archivo-aviso code{
+    background:rgba(184,134,11,0.18); padding:1px 5px; border-radius:3px; font-weight:700;
+  }
   .guardar-btn{
     width:100%; background:var(--accent-2); color:#fefcf4; border:none;
     padding:13px; border-radius:4px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
@@ -125,7 +132,7 @@
   <div id="panel">
     <h2>Tus productos</h2>
     <div class="aviso-guardar">
-      ⚠️ Importante: los cambios que hagas aquí solo se ven en este navegador hasta que descargues el archivo <strong>productos.json</strong> y lo subas a tu repositorio de GitHub (reemplazando el archivo anterior). Así es como se actualiza la tienda para todos.
+      ⚠️ Importante: los cambios que hagas aquí solo se ven en este navegador hasta que descargues el archivo <strong>productos.json</strong> y lo subas a tu repositorio de GitHub (reemplazando el archivo anterior). Además, las fotos que elijas debes subirlas tú mismo a la carpeta <strong>imagenes/</strong> de tu repositorio, con el nombre exacto que te indique el panel.
     </div>
 
     <button class="nuevo-btn" id="nuevoBtn">+ Agregar producto</button>
@@ -145,10 +152,11 @@
       <div class="img-picker" id="imgPicker">
         <div class="img-picker-placeholder" id="imgPickerPlaceholder">
           <span style="font-size:26px;">🖼️</span>
-          <span>Tocar para subir foto</span>
+          <span>Tocar para elegir foto</span>
         </div>
       </div>
       <input type="file" accept="image/*" id="fileInput" style="display:none;">
+      <div id="nombreArchivoAviso" class="nombre-archivo-aviso" style="display:none;"></div>
     </div>
 
     <div class="form-group">
@@ -183,6 +191,8 @@ const STORAGE_KEY = "tienda_productos_local";
 let productos = [];
 let editandoId = null;
 let imagenActual = "";
+let archivoImagenPendiente = null;
+let archivoImagenNombre = "";
 
 // ---------- LOGIN ----------
 document.getElementById("loginBtn").addEventListener("click", intentarLogin);
@@ -284,13 +294,25 @@ function abrirFormulario(producto) {
 
   editandoId = producto ? producto.id : null;
   imagenActual = producto ? (producto.imagen || "") : "";
+  archivoImagenPendiente = null;
+  archivoImagenNombre = "";
 
   document.getElementById("campoNombre").value = producto ? producto.nombre || "" : "";
   document.getElementById("campoPrecio").value = producto ? producto.precio || "" : "";
   document.getElementById("campoMoneda").value = producto ? (producto.moneda || "USD") : "USD";
   document.getElementById("campoDescripcion").value = producto ? producto.descripcion || "" : "";
 
-  actualizarImgPicker();
+  const aviso = document.getElementById("nombreArchivoAviso");
+  aviso.style.display = "none";
+  aviso.innerHTML = "";
+
+  if (producto && producto.imagen) {
+    actualizarImgPicker(producto.imagen);
+    aviso.style.display = "block";
+    aviso.innerHTML = `📌 Foto actual: <code>${producto.imagen}</code>. Si subes una foto nueva, se generará un nombre distinto.`;
+  } else {
+    actualizarImgPicker(null);
+  }
 }
 
 function cerrarFormulario() {
@@ -298,12 +320,12 @@ function cerrarFormulario() {
   document.getElementById("panel").style.display = "block";
 }
 
-function actualizarImgPicker() {
+function actualizarImgPicker(srcVistaPrevia) {
   const picker = document.getElementById("imgPicker");
-  if (imagenActual) {
-    picker.innerHTML = `<img src="${imagenActual}" alt="vista previa">`;
+  if (srcVistaPrevia) {
+    picker.innerHTML = `<img src="${srcVistaPrevia}" alt="vista previa" onerror="this.parentElement.innerHTML='<div class=&quot;img-picker-placeholder&quot;><span style=&quot;font-size:26px;&quot;>🖼️</span><span>Vista previa no disponible aún (sube la foto a GitHub)</span></div>';">`;
   } else {
-    picker.innerHTML = `<div class="img-picker-placeholder"><span style="font-size:26px;">🖼️</span><span>Tocar para subir foto</span></div>`;
+    picker.innerHTML = `<div class="img-picker-placeholder"><span style="font-size:26px;">🖼️</span><span>Tocar para elegir foto</span></div>`;
   }
 }
 
@@ -314,17 +336,53 @@ document.getElementById("imgPicker").addEventListener("click", () => {
 document.getElementById("fileInput").addEventListener("change", (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
-  if (file.size > 4 * 1024 * 1024) {
-    alert("La imagen es muy grande. Usa una foto de menos de 4MB.");
+  if (file.size > 8 * 1024 * 1024) {
+    alert("La imagen es muy grande. Usa una foto de menos de 8MB.");
     return;
   }
+
+  // Generamos un nombre de archivo único y seguro a partir del nombre del producto.
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const nombreProducto = document.getElementById("campoNombre").value.trim();
+  const base = nombreProducto
+    ? nombreProducto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+    : "producto";
+  const nombreArchivo = `${base || "producto"}-${Date.now()}.${ext}`;
+
+  imagenActual = `imagenes/${nombreArchivo}`;
+  archivoImagenPendiente = file;
+  archivoImagenNombre = nombreArchivo;
+
+  // Vista previa local (no se guarda en el JSON, solo para que veas cómo se ve)
   const reader = new FileReader();
   reader.onload = () => {
-    imagenActual = reader.result;
-    actualizarImgPicker();
+    actualizarImgPicker(reader.result);
   };
   reader.readAsDataURL(file);
+
+  mostrarAvisoArchivo(nombreArchivo);
 });
+
+function mostrarAvisoArchivo(nombreArchivo) {
+  const aviso = document.getElementById("nombreArchivoAviso");
+  aviso.style.display = "block";
+  aviso.innerHTML = `
+    📌 Sube esta foto a la carpeta <code>imagenes/</code> de tu repositorio con este nombre exacto:<br>
+    <code>${nombreArchivo}</code><br><br>
+    <button type="button" id="descargarFotoBtn" style="margin-top:4px; background:var(--gold); color:#fff; border:none; padding:8px 12px; border-radius:4px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">⬇ Descargar foto con ese nombre</button>
+  `;
+  document.getElementById("descargarFotoBtn").addEventListener("click", () => {
+    if (!archivoImagenPendiente) return;
+    const url = URL.createObjectURL(archivoImagenPendiente);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = archivoImagenNombre;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
 
 document.getElementById("guardarProductoBtn").addEventListener("click", () => {
   const nombre = document.getElementById("campoNombre").value.trim();
