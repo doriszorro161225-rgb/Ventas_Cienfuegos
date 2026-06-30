@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrar productos</title>
+<style>
+  :root{
+    --ink:#1c2b24;
+    --paper:#f6f1e4;
+    --line:#cdbf9d;
+    --accent:#c0392b;
+    --accent-2:#1e6f5c;
+    --gold:#b8860b;
+    --field-bg:#fffdf8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Courier New", ui-monospace, monospace; min-height:100vh;
+  }
+  .wrap{ max-width:520px; margin:0 auto; padding:20px 16px 60px; }
+  .volver{
+    background:transparent; border:none; color:#6b6354; font-size:12.5px;
+    cursor:pointer; display:flex; align-items:center; gap:6px; margin-bottom:16px;
+    font-family:inherit; padding:0; text-decoration:none;
+  }
+  h2{ font-family:Georgia, serif; font-size:21px; margin:0 0 6px; }
+  p.sub{ font-size:12.5px; color:#6b6354; margin:0 0 18px; }
+
+  /* LOGIN */
+  .login-card{
+    background:var(--field-bg); border:1px solid var(--line); border-radius:6px;
+    padding:28px; text-align:center; margin-top:40px;
+  }
+  .login-input{
+    width:100%; border:1.5px solid var(--line); border-radius:4px; padding:10px 12px;
+    font-family:inherit; font-size:14px; margin-bottom:10px; background:#fff;
+  }
+  .login-error{ color:var(--accent); font-size:12px; margin-bottom:10px; min-height:14px; }
+  .btn-primary{
+    width:100%; background:var(--accent-2); color:#fefcf4; border:none;
+    padding:12px; border-radius:4px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+
+  /* ADMIN PANEL */
+  #panel{ display:none; }
+  .aviso-guardar{
+    border:1.5px dashed var(--gold); background:rgba(184,134,11,0.06); border-radius:4px;
+    padding:12px 14px; font-size:12px; line-height:1.6; margin-bottom:18px; color:#5c4a14;
+  }
+  .nuevo-btn{
+    width:100%; background:var(--accent-2); color:#fefcf4; border:none;
+    padding:12px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer;
+    margin-bottom:18px; font-family:inherit;
+  }
+  .descargar-btn{
+    width:100%; background:var(--gold); color:#fff; border:none;
+    padding:12px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer;
+    margin-bottom:18px; font-family:inherit;
+  }
+  .lista{ display:flex; flex-direction:column; gap:10px; }
+  .item{
+    display:flex; align-items:center; gap:10px; background:var(--field-bg);
+    border:1px solid var(--line); border-radius:4px; padding:10px;
+  }
+  .item img{ width:56px; height:56px; object-fit:cover; border-radius:4px; flex-shrink:0; }
+  .item .ph{
+    width:56px; height:56px; border-radius:4px; flex-shrink:0; background:#eee5cf;
+    display:flex; align-items:center; justify-content:center; font-size:18px; opacity:.4;
+  }
+  .item-info{ flex:1; min-width:0; }
+  .item-nombre{ font-size:13.5px; font-weight:700; }
+  .item-precio{ font-size:12.5px; color:var(--accent-2); }
+  .item-acciones{ display:flex; gap:6px; flex-shrink:0; }
+  .editar-btn{
+    border:1px solid var(--line); background:transparent; color:var(--ink); font-size:12px;
+    padding:6px 10px; border-radius:3px; cursor:pointer; font-family:inherit;
+  }
+  .eliminar-btn{
+    border:1px solid var(--accent); background:transparent; color:var(--accent);
+    width:32px; height:32px; border-radius:3px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center;
+  }
+  .vacio{ text-align:center; padding:40px 20px; color:#9a8f72; font-size:13px; }
+
+  /* FORM */
+  #form-producto{ display:none; }
+  .form-group{ margin-bottom:16px; }
+  .form-row{ display:flex; gap:12px; margin-bottom:16px; }
+  .form-label{ display:block; font-size:12px; margin-bottom:6px; color:#6b6354; }
+  .form-input, .form-textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:4px; padding:9px 10px;
+    font-family:inherit; font-size:14px; background:#fff; box-sizing:border-box;
+  }
+  .form-textarea{ min-height:80px; resize:vertical; font-size:13.5px; }
+  .img-picker{
+    border:1.5px dashed var(--line); border-radius:6px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    height:160px; background:#fff;
+  }
+  .img-picker img{ width:100%; height:100%; object-fit:cover; }
+  .img-picker-placeholder{ display:flex; flex-direction:column; align-items:center; color:#9a8f72; font-size:12.5px; gap:6px; }
+  .guardar-btn{
+    width:100%; background:var(--accent-2); color:#fefcf4; border:none;
+    padding:13px; border-radius:4px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a href="index.html" class="volver">← Volver a la tienda</a>
+
+  <!-- LOGIN -->
+  <div id="login-card" class="login-card">
+    <h2 style="text-align:center;">🔒 Panel de administración</h2>
+    <p class="sub">Escribe la contraseña para gestionar tus productos.</p>
+    <input type="password" id="passwordInput" class="login-input" placeholder="Contraseña" autocomplete="off">
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-primary" id="loginBtn">Entrar</button>
+  </div>
+
+  <!-- PANEL -->
+  <div id="panel">
+    <h2>Tus productos</h2>
+    <div class="aviso-guardar">
+      ⚠️ Importante: los cambios que hagas aquí solo se ven en este navegador hasta que descargues el archivo <strong>productos.json</strong> y lo subas a tu repositorio de GitHub (reemplazando el archivo anterior). Así es como se actualiza la tienda para todos.
+    </div>
+
+    <button class="nuevo-btn" id="nuevoBtn">+ Agregar producto</button>
+    <button class="descargar-btn" id="descargarBtn">⬇ Descargar productos.json</button>
+
+    <div id="vacioLista" class="vacio" style="display:none;">Aún no agregaste productos.</div>
+    <div class="lista" id="lista"></div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div id="form-producto">
+    <a href="#" class="volver" id="cancelarBtn">← Cancelar</a>
+    <h2 id="formTitulo">Nuevo producto</h2>
+
+    <div class="form-group">
+      <label class="form-label">Foto del producto</label>
+      <div class="img-picker" id="imgPicker">
+        <div class="img-picker-placeholder" id="imgPickerPlaceholder">
+          <span style="font-size:26px;">🖼️</span>
+          <span>Tocar para subir foto</span>
+        </div>
+      </div>
+      <input type="file" accept="image/*" id="fileInput" style="display:none;">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Nombre del producto</label>
+      <input type="text" id="campoNombre" class="form-input" placeholder="Ej: Mochila impermeable">
+    </div>
+
+    <div class="form-row">
+      <div style="flex:2;">
+        <label class="form-label">Precio</label>
+        <input type="text" id="campoPrecio" class="form-input" placeholder="Ej: 25">
+      </div>
+      <div style="flex:1;">
+        <label class="form-label">Moneda</label>
+        <input type="text" id="campoMoneda" class="form-input" placeholder="USD">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea id="campoDescripcion" class="form-textarea" placeholder="Detalles, tallas, colores disponibles, estado..."></textarea>
+    </div>
+
+    <button class="guardar-btn" id="guardarProductoBtn">Guardar producto</button>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "vender2026";
+const STORAGE_KEY = "tienda_productos_local";
+
+let productos = [];
+let editandoId = null;
+let imagenActual = "";
+
+// ---------- LOGIN ----------
+document.getElementById("loginBtn").addEventListener("click", intentarLogin);
+document.getElementById("passwordInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") intentarLogin();
+});
+
+function intentarLogin() {
+  const val = document.getElementById("passwordInput").value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById("login-card").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    cargarProductos();
+  } else {
+    document.getElementById("loginError").textContent = "Contraseña incorrecta";
+  }
+}
+
+// ---------- CARGA DE PRODUCTOS ----------
+function cargarProductos() {
+  // Primero intenta cargar lo que el admin ya venía editando en este navegador (localStorage),
+  // si no hay nada, carga el productos.json público como punto de partida.
+  const local = localStorage.getItem(STORAGE_KEY);
+  if (local) {
+    try {
+      productos = JSON.parse(local);
+      renderLista();
+      return;
+    } catch (e) {}
+  }
+  fetch("productos.json?_=" + Date.now())
+    .then(res => res.json())
+    .then(data => {
+      productos = Array.isArray(data) ? data : [];
+      renderLista();
+    })
+    .catch(() => { productos = []; renderLista(); });
+}
+
+function guardarLocal() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(productos));
+}
+
+// ---------- RENDER LISTA ----------
+function formatPrice(precio, moneda) {
+  if (precio === "" || precio === null || precio === undefined) return "";
+  return `${precio} ${moneda || ""}`.trim();
+}
+
+function renderLista() {
+  const lista = document.getElementById("lista");
+  const vacio = document.getElementById("vacioLista");
+  if (!productos.length) {
+    vacio.style.display = "block";
+    lista.innerHTML = "";
+    return;
+  }
+  vacio.style.display = "none";
+  lista.innerHTML = productos.map((p) => `
+    <div class="item">
+      ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}">` : `<div class="ph">🖼️</div>`}
+      <div class="item-info">
+        <div class="item-nombre">${p.nombre || "(sin nombre)"}</div>
+        <div class="item-precio">${formatPrice(p.precio, p.moneda)}</div>
+      </div>
+      <div class="item-acciones">
+        <button class="editar-btn" data-id="${p.id}" data-action="editar">Editar</button>
+        <button class="eliminar-btn" data-id="${p.id}" data-action="eliminar">✕</button>
+      </div>
+    </div>
+  `).join("");
+
+  lista.querySelectorAll("[data-action='editar']").forEach(btn => {
+    btn.addEventListener("click", () => abrirFormulario(productos.find(p => p.id === btn.dataset.id)));
+  });
+  lista.querySelectorAll("[data-action='eliminar']").forEach(btn => {
+    btn.addEventListener("click", () => eliminarProducto(btn.dataset.id));
+  });
+}
+
+function eliminarProducto(id) {
+  if (!confirm("¿Eliminar este producto?")) return;
+  productos = productos.filter(p => p.id !== id);
+  guardarLocal();
+  renderLista();
+}
+
+// ---------- FORMULARIO ----------
+document.getElementById("nuevoBtn").addEventListener("click", () => abrirFormulario(null));
+document.getElementById("cancelarBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  cerrarFormulario();
+});
+
+function abrirFormulario(producto) {
+  document.getElementById("panel").style.display = "none";
+  document.getElementById("form-producto").style.display = "block";
+  document.getElementById("formTitulo").textContent = producto ? "Editar producto" : "Nuevo producto";
+
+  editandoId = producto ? producto.id : null;
+  imagenActual = producto ? (producto.imagen || "") : "";
+
+  document.getElementById("campoNombre").value = producto ? producto.nombre || "" : "";
+  document.getElementById("campoPrecio").value = producto ? producto.precio || "" : "";
+  document.getElementById("campoMoneda").value = producto ? (producto.moneda || "USD") : "USD";
+  document.getElementById("campoDescripcion").value = producto ? producto.descripcion || "" : "";
+
+  actualizarImgPicker();
+}
+
+function cerrarFormulario() {
+  document.getElementById("form-producto").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+}
+
+function actualizarImgPicker() {
+  const picker = document.getElementById("imgPicker");
+  if (imagenActual) {
+    picker.innerHTML = `<img src="${imagenActual}" alt="vista previa">`;
+  } else {
+    picker.innerHTML = `<div class="img-picker-placeholder"><span style="font-size:26px;">🖼️</span><span>Tocar para subir foto</span></div>`;
+  }
+}
+
+document.getElementById("imgPicker").addEventListener("click", () => {
+  document.getElementById("fileInput").click();
+});
+
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) {
+    alert("La imagen es muy grande. Usa una foto de menos de 4MB.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    imagenActual = reader.result;
+    actualizarImgPicker();
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById("guardarProductoBtn").addEventListener("click", () => {
+  const nombre = document.getElementById("campoNombre").value.trim();
+  if (!nombre) {
+    alert("Ponle un nombre al producto.");
+    return;
+  }
+  const datos = {
+    id: editandoId || ("p_" + Date.now()),
+    nombre,
+    precio: document.getElementById("campoPrecio").value.trim(),
+    moneda: document.getElementById("campoMoneda").value.trim(),
+    descripcion: document.getElementById("campoDescripcion").value.trim(),
+    imagen: imagenActual,
+  };
+
+  const idx = productos.findIndex(p => p.id === datos.id);
+  if (idx >= 0) {
+    productos[idx] = datos;
+  } else {
+    productos.push(datos);
+  }
+  guardarLocal();
+  renderLista();
+  cerrarFormulario();
+});
+
+// ---------- DESCARGAR JSON ----------
+document.getElementById("descargarBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(productos, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "productos.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert("Archivo descargado. Ahora súbelo a tu repositorio de GitHub (reemplazando el productos.json anterior) para que los cambios se vean en la tienda.");
+});
+</script>
+
+</body>
+</html>
