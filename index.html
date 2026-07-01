@@ -3,239 +3,410 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Tienda</title>
+<title>Ventas Cienfuegos</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e6f5c">
+<meta name="theme-color" content="#1a3a5c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-  :root{
-    --ink:#1c2b24;
-    --paper:#f6f1e4;
-    --line:#cdbf9d;
-    --accent:#c0392b;
-    --accent-2:#1e6f5c;
-    --field-bg:#fffdf8;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:"Courier New", ui-monospace, monospace;
-    min-height:100vh;
-  }
-  .wrap{ max-width:880px; margin:0 auto; padding:20px 16px 60px; }
-  header{ border-bottom:2px dashed var(--line); padding-bottom:16px; margin-bottom:20px; }
-  .header-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-  .kicker{ font-size:12px; letter-spacing:.18em; color:var(--accent); font-weight:700; }
-  h1{ font-family:Georgia, serif; font-size:26px; margin:4px 0 6px; text-transform:uppercase; letter-spacing:.02em; }
-  .subtitulo{ font-size:13px; color:#6b6354; margin:0; }
-  .admin-link{
-    border:1.5px dashed var(--line); background:transparent; color:var(--ink);
-    width:36px; height:36px; border-radius:4px; cursor:pointer; display:flex;
-    align-items:center; justify-content:center; flex-shrink:0; text-decoration:none; font-size:16px;
-  }
-  .estado{ text-align:center; padding:40px 0; color:#8a8169; font-size:13px; }
-  .vacio{ text-align:center; padding:50px 20px; color:#9a8f72; }
+/* ── VARIABLES ─────────────────────────────── */
+:root{
+  --azul:#1a3a5c;
+  --azul-claro:#2a5080;
+  --dorado:#c8922a;
+  --dorado-claro:#e8ad48;
+  --crema:#fdfaf4;
+  --crema-2:#f5efe4;
+  --linea:#e0d5c0;
+  --texto:#1e2d1e;
+  --texto-suave:#6b6050;
+  --verde-wa:#25d366;
+}
+/* ── RESET ─────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--crema);
+  color:var(--texto);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+  font-size:15px;
+}
+img{max-width:100%;display:block;}
+button{cursor:pointer;font-family:inherit;}
 
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
-    gap:14px;
-  }
-  .card{
-    background:var(--field-bg); border:1px solid var(--line); border-radius:4px;
-    overflow:hidden; cursor:pointer; display:flex; flex-direction:column;
-    box-shadow:0 4px 14px -10px rgba(28,43,36,0.4);
-  }
-  .card-img-wrap{ width:100%; aspect-ratio:1/1; background:#eee5cf; overflow:hidden; }
-  .card-img-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .card-img-placeholder{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#eee5cf; font-size:28px; opacity:.3; }
-  .card-body{ padding:10px; display:flex; flex-direction:column; gap:6px; flex:1; }
-  .card-nombre{ font-size:13.5px; font-family:Georgia, serif; margin:0; line-height:1.3; }
-  .card-precio{ font-size:13px; color:var(--accent-2); font-weight:700; }
-  .card-pedir-btn{
-    margin-top:auto; background:var(--accent-2); color:#fefcf4; border:none;
-    padding:8px 10px; border-radius:3px; font-size:12px; font-weight:700;
-    cursor:pointer; font-family:inherit;
-  }
+/* ── HEADER ────────────────────────────────── */
+.site-header{
+  background:var(--azul);
+  color:var(--crema);
+  padding:0 16px;
+  position:sticky;top:0;z-index:40;
+  box-shadow:0 2px 12px rgba(26,58,92,0.35);
+}
+.header-inner{
+  max-width:900px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:58px;gap:12px;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.logo-badge{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--dorado);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#fff;flex-shrink:0;
+  letter-spacing:-.5px;
+}
+.logo-texto{ line-height:1.15; }
+.logo-nombre{font-weight:700;font-size:15px;letter-spacing:.02em;}
+.logo-sub{font-size:10.5px;opacity:.7;letter-spacing:.06em;text-transform:uppercase;}
+.admin-btn{
+  background:transparent;border:1.5px solid rgba(255,255,255,0.25);
+  color:rgba(255,255,255,0.7);width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  text-decoration:none;flex-shrink:0;transition:border-color .2s,color .2s;
+}
+.admin-btn:hover{border-color:var(--dorado);color:var(--dorado);}
 
-  .overlay{
-    position:fixed; inset:0; background:rgba(28,43,36,0.55);
-    display:none; align-items:center; justify-content:center; padding:16px; z-index:50;
-  }
-  .overlay.open{ display:flex; }
-  .modal{
-    background:var(--field-bg); max-width:420px; width:100%; max-height:88vh;
-    overflow-y:auto; border-radius:6px; position:relative; border:1px solid var(--line);
-  }
-  .modal-cerrar{
-    position:absolute; top:10px; right:10px; background:rgba(28,43,36,0.65);
-    color:#fff; border:none; width:32px; height:32px; border-radius:50%;
-    cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; font-size:16px;
-  }
-  .modal img{ width:100%; max-height:280px; object-fit:cover; display:block; }
-  .modal-body{ padding:18px; }
-  .modal-nombre{ font-family:Georgia, serif; font-size:21px; margin:0 0 6px; }
-  .modal-precio{ font-size:16px; color:var(--accent-2); font-weight:700; margin-bottom:10px; }
-  .modal-descripcion{ font-size:13.5px; line-height:1.6; color:#3d4a42; margin-bottom:18px; white-space:pre-wrap; }
-  .modal-pedir-btn{
-    width:100%; background:var(--accent-2); color:#fefcf4; border:none;
-    padding:13px; border-radius:4px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
-  }
+/* ── HERO ──────────────────────────────────── */
+.hero{
+  background:linear-gradient(135deg,var(--azul) 0%,var(--azul-claro) 100%);
+  color:var(--crema);padding:28px 16px 32px;text-align:center;
+  border-bottom:3px solid var(--dorado);
+}
+.hero-titulo{
+  font-size:clamp(20px,5vw,28px);font-weight:800;
+  letter-spacing:.01em;margin-bottom:8px;
+}
+.hero-titulo span{color:var(--dorado-claro);}
+.hero-sub{font-size:13px;opacity:.8;max-width:340px;margin:0 auto 18px;line-height:1.5;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:5px 14px;font-size:12px;
+}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--verde-wa);
+  box-shadow:0 0 0 3px rgba(37,211,102,0.25);}
+
+/* ── CONTENIDO ─────────────────────────────── */
+.main{max-width:900px;margin:0 auto;padding:22px 14px 80px;}
+
+.seccion-titulo{
+  font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dorado);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.seccion-titulo::after{
+  content:"";flex:1;height:1px;background:var(--linea);
+}
+
+/* ── GRID ──────────────────────────────────── */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
+  gap:14px;
+}
+@media(min-width:500px){.grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));}}
+
+/* ── CARD ──────────────────────────────────── */
+.card{
+  background:#fff;border-radius:10px;overflow:hidden;
+  box-shadow:0 2px 8px rgba(26,58,92,0.10);
+  border:1px solid var(--linea);
+  display:flex;flex-direction:column;
+  transition:transform .15s,box-shadow .15s;
+}
+.card:active{transform:scale(0.98);}
+.card-img{
+  width:100%;aspect-ratio:1/1;object-fit:cover;
+  background:var(--crema-2);cursor:pointer;
+}
+.card-img-ph{
+  width:100%;aspect-ratio:1/1;
+  background:linear-gradient(135deg,var(--crema-2),var(--linea));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;color:var(--texto-suave);font-size:11px;cursor:pointer;
+}
+.card-img-ph svg{opacity:.3;}
+.card-body{padding:11px 11px 12px;flex:1;display:flex;flex-direction:column;gap:5px;}
+.card-nombre{
+  font-size:13.5px;font-weight:700;line-height:1.3;
+  color:var(--texto);cursor:pointer;
+}
+.card-precio{
+  font-size:14px;font-weight:800;color:var(--dorado);
+}
+.card-pedir{
+  margin-top:auto;padding-top:9px;
+  width:100%;background:var(--verde-wa);color:#fff;border:none;
+  border-radius:7px;padding:9px 8px;font-size:12.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s;
+}
+.card-pedir:hover{background:#1db954;}
+.card-pedir svg{flex-shrink:0;}
+
+/* ── ESTADO / VACÍO ────────────────────────── */
+.estado{
+  text-align:center;padding:60px 20px;color:var(--texto-suave);font-size:14px;
+}
+.estado-icono{font-size:40px;margin-bottom:12px;opacity:.4;}
+.skeleton{
+  background:linear-gradient(90deg,var(--crema-2) 25%,var(--linea) 50%,var(--crema-2) 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:240px;}
+
+/* ── MODAL ─────────────────────────────────── */
+.overlay{
+  position:fixed;inset:0;background:rgba(10,20,35,0.65);
+  display:none;align-items:flex-end;justify-content:center;
+  padding:0;z-index:50;backdrop-filter:blur(2px);
+}
+.overlay.open{display:flex;}
+@media(min-width:520px){
+  .overlay{align-items:center;}
+  .modal{border-radius:14px !important;max-height:88vh;}
+}
+.modal{
+  background:#fff;width:100%;max-width:460px;
+  max-height:92vh;overflow-y:auto;
+  border-radius:18px 18px 0 0;
+  position:relative;
+}
+.modal-drag{
+  width:40px;height:4px;border-radius:2px;background:var(--linea);
+  margin:10px auto 0;
+}
+.modal-img{width:100%;max-height:260px;object-fit:cover;display:block;}
+.modal-img-ph{
+  width:100%;height:200px;
+  background:linear-gradient(135deg,var(--crema-2),var(--linea));
+  display:flex;align-items:center;justify-content:center;
+  color:var(--texto-suave);font-size:13px;gap:8px;
+}
+.modal-body{padding:18px 18px 28px;}
+.modal-nombre{font-size:20px;font-weight:800;margin-bottom:6px;color:var(--azul);}
+.modal-precio{font-size:18px;font-weight:800;color:var(--dorado);margin-bottom:12px;}
+.modal-desc{font-size:13.5px;line-height:1.65;color:var(--texto-suave);
+  margin-bottom:20px;white-space:pre-wrap;}
+.modal-pedir{
+  width:100%;background:var(--verde-wa);color:#fff;border:none;
+  border-radius:10px;padding:14px;font-size:15px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.modal-cerrar{
+  position:absolute;top:12px;right:14px;
+  background:rgba(0,0,0,0.45);color:#fff;border:none;
+  width:30px;height:30px;border-radius:50%;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  z-index:2;
+}
+
+/* ── FOOTER ────────────────────────────────── */
+.site-footer{
+  text-align:center;padding:20px 16px;font-size:11.5px;
+  color:var(--texto-suave);border-top:1px solid var(--linea);
+  background:var(--crema-2);
+}
+.site-footer strong{color:var(--azul);}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header>
-    <div class="header-top">
-      <div>
-        <div class="kicker">CATÁLOGO</div>
-        <h1>Lo que tengo a la venta</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-badge">VC</div>
+      <div class="logo-texto">
+        <div class="logo-nombre">Ventas Cienfuegos</div>
+        <div class="logo-sub">Tienda online</div>
       </div>
-      <a href="admin.html" class="admin-link" aria-label="Administrar">🔒</a>
-    </div>
-    <p class="subtitulo">Toca un producto para ver los detalles y pedirlo por WhatsApp.</p>
-  </header>
+    </a>
+    <a href="admin.html" class="admin-btn" aria-label="Administrar">🔒</a>
+  </div>
+</header>
 
-  <div id="estado" class="estado">Cargando productos…</div>
-  <div id="vacio" class="vacio" style="display:none;">Todavía no hay productos publicados.</div>
-  <div id="grid" class="grid"></div>
-</div>
+<section class="hero">
+  <h1 class="hero-titulo">Todo lo que buscas,<br><span>en un solo lugar</span></h1>
+  <p class="hero-sub">Explora nuestro catálogo y pide directo por WhatsApp. Rápido y fácil.</p>
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Pedidos por WhatsApp
+  </div>
+</section>
 
+<main class="main">
+  <div class="seccion-titulo">Productos disponibles</div>
+
+  <div id="skeletons" class="grid">
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+  </div>
+
+  <div id="estado" class="estado" style="display:none;">
+    <div class="estado-icono">🛍️</div>
+    <div>Todavía no hay productos publicados.</div>
+  </div>
+  <div id="grid" class="grid" style="display:none;"></div>
+</main>
+
+<footer class="site-footer">
+  <strong>Ventas Cienfuegos</strong> · Pedidos por WhatsApp · Cuba 🇨🇺
+</footer>
+
+<!-- MODAL -->
 <div class="overlay" id="overlay">
-  <div class="modal">
+  <div class="modal" id="modal">
+    <div class="modal-drag"></div>
     <button class="modal-cerrar" id="modalCerrar">✕</button>
     <div id="modalImgWrap"></div>
     <div class="modal-body">
       <h2 class="modal-nombre" id="modalNombre"></h2>
       <div class="modal-precio" id="modalPrecio"></div>
-      <p class="modal-descripcion" id="modalDescripcion"></p>
-      <button class="modal-pedir-btn" id="modalPedirBtn">Pedir por WhatsApp</button>
+      <p class="modal-desc" id="modalDesc"></p>
+      <button class="modal-pedir" id="modalPedir">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.85L.057 23.5l5.797-1.52A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.85 0-3.583-.497-5.073-1.365l-.363-.215-3.44.902.917-3.349-.236-.375A9.957 9.957 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Pedir por WhatsApp
+      </button>
     </div>
   </div>
 </div>
 
 <script>
-const WHATSAPP_NUMBER = "5354571729";
+const WA = "5354571729";
 
-function isMobileDevice() {
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
+function isMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
 
-function buildWhatsappUrl(message) {
-  const encoded = encodeURIComponent(message);
-  if (isMobileDevice()) {
-    return `whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${encoded}`;
-  }
-  return `https://web.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encoded}`;
-}
-
-function openWhatsapp(message) {
-  const url = buildWhatsappUrl(message);
-  if (isMobileDevice()) {
-    const fallback = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
-    const timer = setTimeout(() => { window.location.href = fallback; }, 1500);
-    window.addEventListener("blur", () => clearTimeout(timer), { once: true });
+function openWA(msg){
+  const enc = encodeURIComponent(msg);
+  const url = isMobile()
+    ? `whatsapp://send?phone=${WA}&text=${enc}`
+    : `https://web.whatsapp.com/send?phone=${WA}&text=${enc}`;
+  if(isMobile()){
+    const fb = `https://api.whatsapp.com/send?phone=${WA}&text=${enc}`;
+    const t = setTimeout(()=>{ window.location.href = fb; }, 1500);
+    window.addEventListener("blur", ()=> clearTimeout(t), {once:true});
     window.location.href = url;
   } else {
-    window.open(url, "_blank");
+    window.open(url,"_blank");
   }
 }
 
-function formatPrice(precio, moneda) {
-  if (precio === "" || precio === null || precio === undefined) return "";
-  return `${precio} ${moneda || ""}`.trim();
+function fmt(precio, moneda){
+  if(!precio) return "";
+  return `${precio} ${moneda||""}`.trim();
 }
 
-function pedirProducto(producto) {
-  const partes = ["🛍️ PEDIDO DE PRODUCTO", "", `📦 Producto: ${producto.nombre}`];
-  if (producto.precio) partes.push(`💵 Precio: ${formatPrice(producto.precio, producto.moneda)}`);
-  if (producto.descripcion) partes.push(`📝 Descripción: ${producto.descripcion}`);
-  partes.push("", "Hola, me interesa este producto. ¿Está disponible?");
-  openWhatsapp(partes.join("\n"));
+function pedirProducto(p){
+  const lines = ["🛍️ PEDIDO - Ventas Cienfuegos",""];
+  lines.push(`📦 Producto: ${p.nombre}`);
+  if(p.precio) lines.push(`💵 Precio: ${fmt(p.precio,p.moneda)}`);
+  if(p.descripcion) lines.push(`📝 Descripción: ${p.descripcion}`);
+  lines.push("","Hola, me interesa este producto. ¿Está disponible?");
+  openWA(lines.join("\n"));
 }
 
-let productosData = [];
+// ICONO WA SVG
+const WA_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.85L.057 23.5l5.797-1.52A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.85 0-3.583-.497-5.073-1.365l-.363-.215-3.44.902.917-3.349-.236-.375A9.957 9.957 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>`;
 
-function abrirModal(producto) {
-  document.getElementById("modalNombre").textContent = producto.nombre;
-  document.getElementById("modalPrecio").textContent = formatPrice(producto.precio, producto.moneda);
-  document.getElementById("modalDescripcion").textContent = producto.descripcion || "";
-  const imgWrap = document.getElementById("modalImgWrap");
-  imgWrap.innerHTML = producto.imagen
-    ? `<img src="${producto.imagen}" alt="${producto.nombre}">`
-    : `<div class="card-img-placeholder" style="height:220px;">🖼️</div>`;
-  document.getElementById("modalPedirBtn").onclick = () => pedirProducto(producto);
-  document.getElementById("overlay").classList.add("open");
+// RENDER CARDS
+function renderCard(p, i){
+  const img = p.imagen
+    ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" decoding="async" data-idx="${i}">`
+    : `<div class="card-img-ph" data-idx="${i}">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Sin foto</span>
+       </div>`;
+  const precio = p.precio ? `<div class="card-precio">${fmt(p.precio,p.moneda)}</div>` : "";
+  return `<article class="card">
+    ${img}
+    <div class="card-body">
+      <div class="card-nombre" data-idx="${i}">${p.nombre}</div>
+      ${precio}
+      <button class="card-pedir" data-idx="${i}" data-action="pedir">
+        ${WA_SVG} Pedir
+      </button>
+    </div>
+  </article>`;
 }
 
-document.getElementById("modalCerrar").addEventListener("click", () => {
-  document.getElementById("overlay").classList.remove("open");
-});
-document.getElementById("overlay").addEventListener("click", (e) => {
-  if (e.target.id === "overlay") document.getElementById("overlay").classList.remove("open");
-});
+let DATA = [];
 
-function renderProductos(productos) {
+function render(productos){
+  document.getElementById("skeletons").style.display = "none";
   const grid = document.getElementById("grid");
   const estado = document.getElementById("estado");
-  const vacio = document.getElementById("vacio");
-  estado.style.display = "none";
-
-  if (!productos.length) {
-    vacio.style.display = "block";
+  if(!productos.length){
+    estado.style.display = "block";
     return;
   }
-  vacio.style.display = "none";
+  grid.style.display = "grid";
+  grid.innerHTML = productos.map((p,i) => renderCard(p,i)).join("");
 
-  grid.innerHTML = productos.map((p, i) => `
-    <article class="card" data-idx="${i}">
-      <div class="card-img-wrap">
-        ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}">` : `<div class="card-img-placeholder">🖼️</div>`}
-      </div>
-      <div class="card-body">
-        <h3 class="card-nombre">${p.nombre}</h3>
-        ${p.precio ? `<div class="card-precio">${formatPrice(p.precio, p.moneda)}</div>` : ""}
-        <button class="card-pedir-btn" data-idx="${i}" data-action="pedir">Pedir</button>
-      </div>
-    </article>
-  `).join("");
-
-  grid.querySelectorAll(".card").forEach(card => {
-    card.addEventListener("click", (e) => {
-      if (e.target.dataset.action === "pedir") return;
-      abrirModal(productos[card.dataset.idx]);
-    });
+  // Click en imagen o nombre → abre modal
+  grid.querySelectorAll("[data-idx]:not([data-action])").forEach(el => {
+    el.addEventListener("click", ()=> abrirModal(DATA[el.dataset.idx]));
   });
+  // Click en pedir → WhatsApp
   grid.querySelectorAll("[data-action='pedir']").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", e => {
       e.stopPropagation();
-      pedirProducto(productos[btn.dataset.idx]);
+      pedirProducto(DATA[btn.dataset.idx]);
     });
   });
 }
 
+// MODAL
+function abrirModal(p){
+  document.getElementById("modalNombre").textContent = p.nombre;
+  document.getElementById("modalPrecio").textContent = fmt(p.precio,p.moneda);
+  document.getElementById("modalDesc").textContent = p.descripcion || "";
+  document.getElementById("modalImgWrap").innerHTML = p.imagen
+    ? `<img class="modal-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy">`
+    : `<div class="modal-img-ph">📷 Sin foto</div>`;
+  document.getElementById("modalPedir").onclick = ()=> pedirProducto(p);
+  document.getElementById("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function cerrarModal(){
+  document.getElementById("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("modalCerrar").addEventListener("click", cerrarModal);
+document.getElementById("overlay").addEventListener("click", e => {
+  if(e.target.id === "overlay") cerrarModal();
+});
+// Cerrar con swipe hacia abajo en móvil
+let touchStartY = 0;
+document.getElementById("modal").addEventListener("touchstart", e => {
+  touchStartY = e.touches[0].clientY;
+}, {passive:true});
+document.getElementById("modal").addEventListener("touchmove", e => {
+  if(e.touches[0].clientY - touchStartY > 60) cerrarModal();
+}, {passive:true});
+
+// CARGA
 fetch("productos.json?_=" + Date.now())
-  .then(res => res.json())
+  .then(r => r.json())
   .then(data => {
-    productosData = Array.isArray(data) ? data : [];
-    renderProductos(productosData);
+    DATA = Array.isArray(data) ? data : [];
+    render(DATA);
   })
-  .catch(() => {
-    document.getElementById("estado").textContent = "No se pudieron cargar los productos.";
+  .catch(()=>{
+    document.getElementById("skeletons").style.display = "none";
+    document.getElementById("estado").style.display = "block";
+    document.getElementById("estado").innerHTML =
+      '<div class="estado-icono">⚠️</div><div>No se pudieron cargar los productos.<br>Verifica tu conexión.</div>';
   });
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
 </script>
-
 </body>
 </html>
