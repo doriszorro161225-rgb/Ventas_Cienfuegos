@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -52,7 +52,7 @@ button{cursor:pointer;font-family:inherit;}
 .lista{display:flex;flex-direction:column;gap:10px;}
 .item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--linea);border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(26,58,92,.06);}
 .item-img{width:60px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--crema2);}
-.item-ph{width:60px;height:60px;border-radius:8px;flex-shrink:0;background:var(--crema2);display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.4;}
+.item-img-ph{width:60px;height:60px;border-radius:8px;flex-shrink:0;background:var(--crema2);display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.4;}
 .item-info{flex:1;min-width:0;}
 .item-cat{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dorado);margin-bottom:2px;}
 .item-nombre{font-size:14px;font-weight:700;color:var(--azul);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -160,7 +160,7 @@ button{cursor:pointer;font-family:inherit;}
         <option value="herramientas">🔧 Herramientas</option>
         <option value="automotriz">🚗 Automotriz y Medición</option>
         <option value="miscelaneos">🏠 Misceláneos y Hogar</option>
-        <option value="planillas">📋 Planillas de Venta</option>
+        <!-- Eliminada la opción "Planillas de Venta" -->
       </select>
     </div>
 
@@ -212,7 +212,7 @@ const CATS = [
   {id:"herramientas",nombre:"Herramientas",ico:"🔧"},
   {id:"automotriz",nombre:"Automotriz y Medición",ico:"🚗"},
   {id:"miscelaneos",nombre:"Misceláneos y Hogar",ico:"🏠"},
-  {id:"planillas",nombre:"Planillas de Venta",ico:"📋"},
+  // Se eliminó la categoría "planillas"
 ];
 
 let productos=[], editandoId=null, imagenActual="", archivoPendiente=null, archivoNombre="";
@@ -279,9 +279,13 @@ function renderLista(filtro="todas"){
   const datos = filtro==="todas" ? productos : productos.filter(p=>p.categoria===filtro);
   if(!datos.length){ empty.style.display="block"; lista.innerHTML=""; return; }
   empty.style.display="none";
-  lista.innerHTML = datos.map(p=>`
+
+  lista.innerHTML = datos.map(p=>{
+    const hasImg = p.imagen && p.imagen.length > 0;
+    const imgHtml = hasImg ? `<div style="position:relative;"><img class="item-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.item-img-ph').style.display='flex';"> <div class="item-img-ph" style="display:none;">🖼️</div></div>` : `<div class="item-img-ph">🖼️</div>`;
+    return `
     <div class="item">
-      ${p.imagen?`<img class="item-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy">`:`<div class="item-ph">🖼️</div>`}
+      ${imgHtml}
       <div class="item-info">
         <div class="item-cat">${catIco(p.categoria)} ${catNombre(p.categoria)}</div>
         <div class="item-nombre">${p.nombre||"(sin nombre)"}</div>
@@ -293,7 +297,8 @@ function renderLista(filtro="todas"){
         <button class="btn-del" data-del="${p.id}">✕</button>
       </div>
     </div>
-  `).join("");
+  `}).join("");
+
   lista.querySelectorAll(".btn-sm").forEach(b=>b.addEventListener("click",()=>abrirForm(productos.find(p=>p.id===b.dataset.id))));
   lista.querySelectorAll(".btn-del").forEach(b=>b.addEventListener("click",()=>eliminar(b.dataset.del)));
 }
@@ -335,9 +340,11 @@ function cerrarForm(){
 
 function actualizarPicker(src){
   const pk=document.getElementById("imgPicker");
-  pk.innerHTML=src
-    ?`<img src="${src}" alt="vista previa" onerror="this.parentElement.innerHTML='<div class=\\'img-ph\\'><span style=\\'font-size:32px;\\'>🖼️</span><span>Foto pendiente de subir a GitHub</span></div>'">`
-    :`<div class="img-ph"><span style="font-size:32px;">🖼️</span><span>Tocar para elegir foto</span></div>`;
+  if(src){
+    pk.innerHTML = `<img src="${src}" alt="vista previa" onerror="this.style.display='none'; this.parentElement.querySelector('.img-ph').style.display='flex';"> <div class="img-ph" style="display:none;"><span style="font-size:32px;">🖼️</span><span>Foto pendiente de subir a GitHub</span></div>`;
+  } else {
+    pk.innerHTML = `<div class="img-ph"><span style="font-size:32px;">🖼️</span><span>Tocar para elegir foto</span></div>`;
+  }
 }
 
 document.getElementById("imgPicker").addEventListener("click",()=>document.getElementById("fileInput").click());
@@ -396,4 +403,3 @@ document.getElementById("descargarBtn").addEventListener("click",()=>{
 </script>
 </body>
 </html>
-

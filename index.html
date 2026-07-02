@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -387,7 +387,6 @@ document.getElementById("ofCancel").addEventListener("click", ()=>{
 });
 
 document.getElementById("ofSend").addEventListener("click", ()=>{
-  // Validar
   let ok = true;
   const nombre = document.getElementById("ofNombre").value.trim();
   const telefono = document.getElementById("ofTelefono").value.trim();
@@ -403,7 +402,6 @@ document.getElementById("ofSend").addEventListener("click", ()=>{
   if(!referencia){ document.getElementById("ofReferenciaErr").style.display="block"; ok=false; }
   if(!ok) return;
 
-  // Generar mensaje
   const fecha = new Date().toLocaleDateString("es-CU", { day:"2-digit", month:"2-digit", year:"numeric" });
   const items = carrito.map(i => `* ${i.nombre} x${i.cantidad}`).join("\n");
   const total = totalCarrito();
@@ -424,8 +422,6 @@ Muchas gracias.`;
 
   document.getElementById("orderFormOverlay").classList.remove("open");
   openWA(msg);
-  // Opcional: vaciar carrito después de enviar
-  // carrito = []; guardarCarrito(); renderCarrito();
 });
 
 // ============================================================
@@ -433,11 +429,9 @@ Muchas gracias.`;
 // ============================================================
 document.getElementById("currencySelect").addEventListener("change", (e)=>{
   monedaActual = e.target.value;
-  // Re-renderizar todo
   if(catActiva === "todas") renderCatalogo();
   else renderCatalogo(catActiva);
   renderCarrito();
-  // Actualizar modales abiertos
   if(window._modalProducto) actualizarModal(window._modalProducto);
 });
 
@@ -446,13 +440,15 @@ document.getElementById("currencySelect").addEventListener("change", (e)=>{
 // ============================================================
 function cardHTML(p, idx, mostrarTag=false){
   const tag = mostrarTag ? `<div class="card-cat-tag">${icoCat(p.categoria)} ${nombreCat(p.categoria)}</div>` : "";
-  const img = p.imagen
-    ? `<img class="card-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" decoding="async" data-idx="${idx}" onerror="this.parentElement.outerHTML='<div class=\\'card-img-wrap\\'><div class=\\'card-img-ph\\' data-idx=\\'${idx}\\'>${IMG_PH_ICO.replace(/'/g,"\\'")}<span>Sin foto</span></div></div>'">`
-    : `<div class="card-img-ph" data-idx="${idx}">${IMG_PH_ICO}<span>Sin foto</span></div>`;
+  const hasImg = p.imagen && p.imagen.length > 0;
+  const imgSrc = hasImg ? p.imagen : "";
+  const imgWrap = `<div class="card-img-wrap">
+    ${hasImg ? `<img class="card-img" src="${imgSrc}" alt="${p.nombre}" loading="lazy" decoding="async" data-idx="${idx}" onerror="this.style.display='none'; this.parentElement.querySelector('.card-img-ph').style.display='flex';">` : ''}
+    <div class="card-img-ph" style="display:${hasImg ? 'none' : 'flex'};" data-idx="${idx}">${IMG_PH_ICO}<span>Sin foto</span></div>
+  </div>`;
 
   const precio = p.precio ? `<div class="card-precio">${fmt(p.precio, p.moneda)}</div>` : `<div class="card-precio" style="font-size:12px;color:var(--suave2);">Consultar</div>`;
 
-  // Stock
   const stock = p.stock !== undefined ? p.stock : 0;
   let stockClass = "disponible";
   let stockLabel = `Disponible: ${stock}`;
@@ -461,7 +457,7 @@ function cardHTML(p, idx, mostrarTag=false){
   else { stockLabel = `✅ Disponible: ${stock}`; }
 
   return `<article class="card">
-    <div class="card-img-wrap">${img}</div>${tag}
+    ${imgWrap}${tag}
     <div class="card-body">
       <div class="card-nombre" data-idx="${idx}">${p.nombre}</div>
       ${precio}
@@ -531,6 +527,9 @@ function renderCatalogo(filtro=null){
   bindCards(contenido);
 }
 
+// ============================================================
+//  BÚSQUEDA (mejorada: incluye precio y moneda)
+// ============================================================
 function renderBusqueda(q){
   const rb = document.getElementById("resultadosBusqueda");
   const contenido = document.getElementById("contenido");
@@ -540,7 +539,8 @@ function renderBusqueda(q){
 
   const ql = q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const res = DATA.map((p,idx)=>({p,idx})).filter(({p})=>{
-    const hay = `${p.nombre} ${p.descripcion||""} ${nombreCat(p.categoria)}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    // Ahora incluimos también el precio y la moneda
+    const hay = `${p.nombre} ${p.descripcion||""} ${nombreCat(p.categoria)} ${p.precio||""} ${p.moneda||""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     return hay.includes(ql);
   });
 
@@ -549,7 +549,7 @@ function renderBusqueda(q){
 
   if(!res.length){
     rb.style.display="block";
-    rb.innerHTML=`<div class="empty"><div class="ico">🔍</div><div>No encontramos productos con ese nombre.</div></div>`;
+    rb.innerHTML=`<div class="empty"><div class="ico">🔍</div><div>No encontramos productos con ese nombre o precio.</div></div>`;
     return;
   }
   rb.style.display="block";
@@ -585,7 +585,7 @@ function buildCatsNav(){
 }
 
 // ============================================================
-//  BÚSQUEDA
+//  BÚSQUEDA (eventos)
 // ============================================================
 let searchTimer = null;
 const searchInput = document.getElementById("searchInput");
@@ -625,9 +625,18 @@ function abrirModal(p){
   else stockHTML = `<span class="dot" style="background:var(--ok);"></span>✅ Disponible: ${stock}`;
   document.getElementById("mStock").innerHTML = stockHTML;
   document.getElementById("mDesc").textContent = p.descripcion||"";
-  document.getElementById("mImgWrap").innerHTML = p.imagen
-    ? `<img class="modal-img" src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'modal-img-ph\\'>${IMG_PH_ICO.replace(/'/g,"\\'")}</div>'">`
-    : `<div class="modal-img-ph">${IMG_PH_ICO}</div>`;
+
+  // Imagen con placeholder robusto
+  const hasImg = p.imagen && p.imagen.length > 0;
+  const imgSrc = hasImg ? p.imagen : "";
+  const wrap = document.getElementById("mImgWrap");
+  wrap.innerHTML = `
+    <div style="position:relative;">
+      ${hasImg ? `<img class="modal-img" src="${imgSrc}" alt="${p.nombre}" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.modal-img-ph').style.display='flex';">` : ''}
+      <div class="modal-img-ph" style="display:${hasImg ? 'none' : 'flex'};">${IMG_PH_ICO}</div>
+    </div>
+  `;
+
   document.getElementById("mPedir").onclick = ()=>pedirProducto(p);
   document.getElementById("overlay").classList.add("open");
   document.body.style.overflow="hidden";
